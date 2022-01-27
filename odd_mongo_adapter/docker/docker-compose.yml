@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+
+  mongodb:
+    image: 'mongo:latest'
+    container_name: odd-mongo-db
+    restart: always
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+    volumes:
+      - data:/var/lib/mongo/data
+    ports:
+      - "27017-27019:27017-27019"
+  odd-mongo-adapter:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: odd-mongo-adapter
+    restart: always
+    environment:
+      # Cache refreshing interval (minutes):
+      - SCHEDULER_INTERVAL_MINUTES=${SCHEDULER_INTERVAL_MINUTES}
+      # MongoDB
+      - MONGO_HOST=${MONGO_HOST}
+      - MONGO_DATABASE=${MONGO_DATABASE}
+      - MONGO_USER=${MONGO_USER}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      # FLASK:
+      - FLASK_ENVIRONMENT=${FLASK_ENVIRONMENT}
+      - FLASK_APP=${FLASK_APP}
+    depends_on:
+      - mongodb
+    ports:
+      - "8080:8080"
+
+volumes:
+  data:
